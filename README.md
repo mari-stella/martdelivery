@@ -408,7 +408,7 @@ http GET http://localhost:8088/myPages
 
 
 2. 장애격리
-   고객/고객센터/배달 관리 기능이 수행되지 않더라도 주문은 365일 24시간 받을 수 있어야 한다 Async (event-driven), Eventual Consistency
+- 고객/고객센터/배달 관리 기능이 수행되지 않더라도 주문은 365일 24시간 받을 수 있어야 한다 Async (event-driven), Eventual Consistency
 
 --> Customer/CustomerCenter/Delivery 서비스를 내리고 주문을 생성했을때, 정상적으로 주문됨을 확인함
 

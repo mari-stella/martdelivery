@@ -1,0 +1,109 @@
+server:
+  port: 8080
+---
+
+spring:
+  profiles: default
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:file:./orderdb
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+        streams:
+          binder:
+            configuration:
+              default:
+                key:
+                  serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+                value:
+                  serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+      bindings:
+        event-in:
+          group: Order
+          destination: martdelivery
+          contentType: application/json
+        event-out:
+          destination: martdelivery
+          contentType: application/json
+
+logging:
+  level:
+    org.hibernate.type: trace
+    org.springframework.cloud: debug
+server:
+  port: 8082
+feign:
+  hystrix:
+    enabled: true
+api:
+  url:
+    product: http://localhost:8081
+---
+
+spring:
+  profiles: docker
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:file:./orderdb
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    properties:
+      hibernate:
+      #show_sql: true
+      #format_sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: my-kafka.kafka.svc.cluster.local:9092
+        streams:
+          binder:
+            configuration:
+              default:
+                key:
+                  serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+                value:
+                  serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+      bindings:
+        event-in:
+          group: Order
+          destination: martdelivery
+          contentType: application/json
+        event-out:
+          destination: martdelivery
+          contentType: application/json
+api:
+  url:
+    product: ${configmap}
+feign:
+  hystrix:
+    enabled: true
+hystrix:
+  command:
+    default:
+      circuitBreaker.requestVolumeThreshold: 1

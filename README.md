@@ -857,11 +857,13 @@ docker push user09acr.azurecr.io/delivery:latest
 
 ```
 
-- yml파일 이용한 deploy
+- yml파일 이용한 deploy (Order를 예시로 함)
 ```
+cd ../Order/kubernetes
 kubectl apply -f deployment.yml
 
-- martdelivery/Order/kubernetes/deployment.yml 파일 
+# martdelivery/Order/kubernetes/deployment.yml 파일 
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -915,7 +917,7 @@ spec:
               # memory: 256Mi
 ```	  
 
-- deploy 완료 (자료는 최종 상태)
+- deploy 완료 (최종 상태)
 
 ![image](https://user-images.githubusercontent.com/84316082/123370365-895ae180-d5ba-11eb-9b3d-3e552ae8afa6.png)
 
@@ -950,16 +952,17 @@ kubectl create configmap resturl --from-literal=url=http://Product:8080
 
 ## Secret 
 - DBMS 연결에 필요한 username 및 password는 민감한 정보이므로 Secret 처리하였다.
+- Product의 DBMS연결 정보에 적용하였다.
 
 ![image](https://user-images.githubusercontent.com/84316082/123190991-7f15e600-d4db-11eb-84e7-bd56aa029fd9.png)
 
-- deployment.yml에서 env로 설정하였다.
+- (Product) deployment.yml에 env로 설정하였다.
 
 ![image](https://user-images.githubusercontent.com/84316082/123191183-d1570700-d4db-11eb-8b03-03ad81956a95.png)
 
 - 쿠버네티스에서는 다음과 같이 Secret object를 생성하였다.
 ```
-# secret.yml
+# (Product) secret.yml
 
 apiVersion: v1
 kind: Secret
@@ -980,7 +983,7 @@ password: ****
 
 시나리오는 주문(Order)-->상품(Product) 확인 시 주문 요청에 대한 재고확인이 3초를 넘어설 경우 Circuit Breaker 를 통하여 장애격리.
 
-- Hystrix 를 설정:  FeignClient 요청처리에서 처리시간이 3초가 넘어서면 CB가 동작하도록 (요청을 빠르게 실패처리, 차단) 설정
+- Hystrix 설정:  FeignClient 요청처리에서 처리시간이 3초가 넘어서면 CB가 동작하도록 (요청을 빠르게 실패처리, 차단) 설정
                     추가로, 테스트를 위해 1번만 timeout이 발생해도 CB가 발생하도록 설정
 ```
 # (Order) application.yml
@@ -993,6 +996,11 @@ password: ****
 # (Order) ProductService.java
 ```
 ![image](https://user-images.githubusercontent.com/84316082/123192807-960a0780-d4de-11eb-8072-0dbf886cee7c.png)
+
+```
+# (Order) ProductServiceFallbackFactory
+```
+![image](https://user-images.githubusercontent.com/84316082/123376858-23745700-d5c6-11eb-9fca-18103ae03b04.png)
 
 
 - 피호출 서비스(상품:Product)에서 테스트를 위해 productId 2인 주문건에 대해 sleep 처리
